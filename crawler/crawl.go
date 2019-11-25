@@ -1,31 +1,36 @@
 package main
 
 import (
-	"net/http"
-	"io"
 	"encoding/csv"
-	"strconv"
-	"github.com/jinzhu/gorm"
 	"fmt"
+	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"io"
+	"net/http"
+	"strconv"
 	"strings"
 )
 
-func downloadCSV(url string) io.Reader {
+func download(url string) io.ReadCloser {
 	resp, err := http.Get(url)
 	if err != nil {
 		panic(err)
+	}
+	if resp.StatusCode != 200 {
+		panic(resp)
 	}
 	return resp.Body
 }
 
 type Stock struct {
-	Number string `gorm:"primary_key"`
-	Name string
-	Price float64
+	ID        string `gorm:"primary_key"`
+	Name      string
+	Price     float64
+	Dividends []Dividend
 }
 
-func importToDatabase(db *gorm.DB, file io.Reader) (err error) {
+func importToDatabase(db *gorm.DB, file io.ReadCloser) (err error) {
+	defer file.Close()
 	reader := csv.NewReader(file)
 	// ignore first line
 	reader.Read()
@@ -50,8 +55,8 @@ func importToDatabase(db *gorm.DB, file io.Reader) (err error) {
 }
 
 func parseStock(record []string) (stock Stock) {
-	stock.Number = record[0]
-	stock.Name =  record[1]
+	stock.ID = record[0]
+	stock.Name = record[1]
 	var err error
 	price := strings.Replace(record[7], ",", "", -1)
 	stock.Price, err = strconv.ParseFloat(price, 64)
@@ -72,7 +77,7 @@ func openDB() *gorm.DB {
 
 func main() {
 	db := openDB()
-	file := downloadCSV("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
+	file := download("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
 	if err := importToDatabase(db, file); err != nil {
 		panic(err)
 	}
