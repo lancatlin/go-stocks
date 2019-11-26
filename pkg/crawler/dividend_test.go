@@ -1,4 +1,4 @@
-package main
+package crawler
 
 import (
 	"testing"
@@ -6,5 +6,5 @@ import (
 
 func TestCrawDividend(t *testing.T) {
 	id := "2884"
-	t.Log(CrawlDividend(id))
+	t.Log(crawlDividend(id))
 }

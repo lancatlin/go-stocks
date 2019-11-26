@@ -1,36 +1,35 @@
-package main
+package crawler
 
 import (
 	"github.com/PuerkitoBio/goquery"
 	"strconv"
+	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
-type Dividend struct {
-	Stock         Stock  `gorm:"foreignkey:StockID"`
-	StockID       string `gorm:"primary_key"`
-	Year          int    `gorm:"primary_key"`
-	MoneyDividend float64
-	StockDividend float64
+func (c Crawler) UpdateDividend(id string) {
+	for _, dividend := range crawlDividend(id) {
+		c.save(dividend)
+	}
 }
 
-func CrawlDividend(id string) []Dividend {
+func crawlDividend(id string) []model.Dividend {
 	page := download("https://tw.stock.yahoo.com/d/s/dividend_" + id + ".html")
 	doc, err := goquery.NewDocumentFromReader(page)
 	if err != nil {
 		panic(err)
 	}
-	divs := make([]Dividend, 10)
+	divs := make([]model.Dividend, 10)
 	doc.Find(`tr[bgcolor='#FFFFFF']`).Each(func(i int, s *goquery.Selection) {
-		dividend := Dividend{
-			StockID: id,
-		}
-		dividend.parseDividend(s)
+		dividend := parseDividend(s, id)
 		divs[i] = dividend
 	})
 	return divs
 }
 
-func (dividend *Dividend) parseDividend(s *goquery.Selection) {
+func parseDividend(s *goquery.Selection, id string) model.Dividend {
+	dividend := model.Dividend{
+		StockID: id,
+	}
 	s.Children().Each(func(i int, s *goquery.Selection) {
 		switch i {
 		case 0:
@@ -41,6 +40,7 @@ func (dividend *Dividend) parseDividend(s *goquery.Selection) {
 			dividend.StockDividend = parseFloat(s.Text())
 		}
 	})
+	return dividend
 }
 
 func parseFloat(s string) float64 {
