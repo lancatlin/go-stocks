@@ -1,2 +1,3 @@
-cmd/crawler
+db.odb
 .env
+cmd/crawler/crawler

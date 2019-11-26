@@ -4,11 +4,11 @@ import (
 	"encoding/csv"
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"github.com/lancatlin/go-stocks/pkg/model"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
-	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
 type Crawler struct {
@@ -18,7 +18,6 @@ type Crawler struct {
 func New(db *gorm.DB) Crawler {
 	return Crawler{db}
 }
-
 
 func (c Crawler) UpdatePrices() {
 	file := download("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
@@ -87,4 +86,3 @@ func openDB() *gorm.DB {
 	db.AutoMigrate(&model.Stock{})
 	return db
 }
-

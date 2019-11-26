@@ -5,5 +5,5 @@ if [ "$EUID" -ne 0 ]
 fi
 source .env
 # create database and user
-mysql -e "CREATE DATABASE $DB"
-mysql -e "GRANT ALL PRIVILEGES ON $DB.* TO $DB@localhost IDENTIFIED BY '$PASSWORD!'"
+mysql -e "CREATE DATABASE IF NOT EXISTS $DB"
+mysql -e "GRANT ALL PRIVILEGES ON $DB.* TO $DB@localhost IDENTIFIED BY '$PASSWORD'"

@@ -2,8 +2,8 @@ package crawler
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	"strconv"
 	"github.com/lancatlin/go-stocks/pkg/model"
+	"strconv"
 )
 
 func (c Crawler) UpdateDividend(id string) {

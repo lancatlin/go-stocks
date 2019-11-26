@@ -1,24 +1,26 @@
 package config
 
 import (
-	"github.com/jinzhu/gorm"
-	"os"
 	"fmt"
-	"github.com/lancatlin/go-stocks/pkg/model"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/lancatlin/go-stocks/pkg/model"
+	"os"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Mode string
 
 const (
-	DebugMode Mode = "debug mode"
+	DebugMode   Mode = "debug mode"
 	ReleaseMode Mode = "release mode"
 )
 
 type Config struct {
 	Mode Mode
-	DB *gorm.DB
+	DB   *gorm.DB
 	Host string
 	Port string
 }
@@ -27,7 +29,7 @@ func New() Config {
 	mode := ReleaseMode
 	config := Config{
 		Mode: mode,
-		DB: openDB(mode),
+		DB:   openDB(mode),
 	}
 	return config
 }
@@ -38,9 +40,9 @@ func openDB(mode Mode) (db *gorm.DB) {
 	case DebugMode:
 		db, err = gorm.Open("sqlite3", "/tmp/gorm.db")
 	case ReleaseMode:
-		conf := struct{
+		conf := struct {
 			Database string
-			User string
+			User     string
 			Password string
 		}{
 			os.Getenv("DB"),
@@ -52,6 +54,8 @@ func openDB(mode Mode) (db *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&model.Stock{}, &model.Dividend{})
+	if err = db.AutoMigrate(&model.Stock{}, &model.Dividend{}).Error; err != nil {
+		panic(err)
+	}
 	return db
 }
