@@ -23,10 +23,10 @@ func crawlDividend(id string) []model.Dividend {
 	if err != nil {
 		panic(err)
 	}
-	divs := make([]model.Dividend, 10)
+	divs := make([]model.Dividend, 0, 10)
 	doc.Find(`tr[bgcolor='#FFFFFF']`).Each(func(i int, s *goquery.Selection) {
 		dividend := parseDividend(s, id)
-		divs[i] = dividend
+		divs = append(divs, dividend)
 	})
 	return divs
 }

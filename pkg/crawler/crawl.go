@@ -29,7 +29,14 @@ func (c Crawler) UpdatePrices() (err error) {
 	if err != nil {
 		return
 	}
-	if err = c.importToDatabase(file); err != nil {
+	if err = c.importToDatabase(file, parseStockListed); err != nil {
+		return
+	}
+	file, err = download("http://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data")
+	if err != nil {
+		return
+	}
+	if err = c.importToDatabase(file, parseStockCounter); err != nil {
 		return
 	}
 	return nil
@@ -46,7 +53,7 @@ func download(url string) (io.ReadCloser, error) {
 	return resp.Body, err
 }
 
-func (c Crawler) importToDatabase(file io.ReadCloser) (err error) {
+func (c Crawler) importToDatabase(file io.ReadCloser, parse func([]string) model.Stock) (err error) {
 	defer file.Close()
 	reader := csv.NewReader(file)
 	// ignore first line
@@ -56,7 +63,7 @@ func (c Crawler) importToDatabase(file io.ReadCloser) (err error) {
 		if err == io.EOF {
 			break
 		}
-		stock := parseStock(record)
+		stock := parse(record)
 		fmt.Println(stock)
 		c.save(&stock)
 	}
@@ -75,7 +82,7 @@ func (c Crawler) save(obj interface{}) {
 	}
 }
 
-func parseStock(record []string) (stock model.Stock) {
+func parseStockListed(record []string) (stock model.Stock) {
 	stock.ID = record[0]
 	stock.Name = record[1]
 	var err error
@@ -83,6 +90,18 @@ func parseStock(record []string) (stock model.Stock) {
 	stock.Price, err = strconv.ParseFloat(price, 64)
 	if err != nil {
 		panic(err)
+	}
+	return
+}
+
+func parseStockCounter(record []string) (stock model.Stock) {
+	stock.ID = record[1]
+	stock.Name = record[2]
+	var err error
+	price := strings.Replace(record[3], ",", "", -1)
+	stock.Price, err = strconv.ParseFloat(price, 64)
+	if err != nil {
+		stock.Price = 0
 	}
 	return
 }

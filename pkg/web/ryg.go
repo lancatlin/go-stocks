@@ -26,7 +26,7 @@ func (h Handler) RYG(id string) RYG {
 		panic(err)
 	}
 
-	if len(stock.Dividends) < 10 {
+	if len(stock.Dividends) == 0 {
 		// if hadn't crawl yet
 		h.UpdateDividend(id)
 		return h.RYG(id)
