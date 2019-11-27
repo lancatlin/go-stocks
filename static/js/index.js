@@ -12,7 +12,7 @@ function remove(id) {
     let stocks = Cookies.get('id').split('&')
     for (i in stocks) {
         if (stocks[i] == id) {
-            stocks.splice(i, i)
+            stocks.splice(i, 1)
             break
         }
     }
