@@ -27,6 +27,7 @@ func Registry(conf config.Config) *gin.Engine {
 		"percent":  percent,
 	})
 	router.LoadHTMLGlob("../../templates/*.htm")
+	router.Static("/static", "../../static")
 
 	router.GET("/", handler.Index)
 	api := router.Group("/api")
@@ -66,5 +67,5 @@ func loadIDs(c *gin.Context) (IDs []string) {
 }
 
 func hasQuery(c *gin.Context) bool {
-	return c.Query("id") == ""
+	return c.Query("id") != ""
 }

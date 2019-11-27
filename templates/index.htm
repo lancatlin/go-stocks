@@ -2,21 +2,40 @@
 <html>
     <head>
         <title>股票紅綠燈</title>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
+        <script src="/static/js/index.js"></script>
     </head>
     <body>
-        <h1>股票紅綠燈</h1>
+        <h1><a href="/">股票紅綠燈</a></h1>
         <form action="/" method="get">
             股票名稱或代號：<input type="text" name="id" id="">
         </form>
         <table>
+        {{ $hasQuery := .query}}
         {{range .stocks}}
-            <tr>
+            <tr id='tr-{{ .ID }}'>
+            {{ if not .IsNil }}
                 <td>{{.ID}}</td>
                 <td>{{.Name}}</td>
                 <td>{{percent .Price}}</td>
                 {{range .Returns}}
                 <td bgcolor="{{getColor .}}">{{percent .}}%</td>
                 {{end}}
+                <td>
+                {{ if $hasQuery }}
+                    <button type="button" onclick="save({{ .ID }})">釘選</button>
+                    {{ $hasQuery = false }}
+                {{ else }}
+                    <button type="button" onclick="remove({{ .ID }})">移除</button>
+                {{ end }}
+                </td>
+            {{ else }}
+                <td>----</td>
+                <td>Not Found</td>
+                {{ if $hasQuery }}
+                    {{ $hasQuery = false }}
+                {{end}}
+            {{ end }}
             </tr>
         {{end}}
         </table>

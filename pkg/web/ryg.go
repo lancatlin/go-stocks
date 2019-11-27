@@ -3,7 +3,6 @@ package web
 import (
 	"github.com/lancatlin/go-stocks/pkg/model"
 	"github.com/jinzhu/gorm"
-	"fmt"
 )
 
 type RYG struct {
@@ -27,7 +26,6 @@ func (h Handler) RYG(id string) RYG {
 		panic(err)
 	}
 
-	fmt.Println(stock)
 	if len(stock.Dividends) < 10 {
 		// if hadn't crawl yet
 		h.UpdateDividend(id)
