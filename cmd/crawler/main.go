@@ -8,12 +8,12 @@ import (
 
 var (
 	UpdatePrices   bool
-	UpdateDividend bool
+	UpdateDividend string
 )
 
 func init() {
-	flag.BoolVar(&UpdatePrices, "p", true, "use -p=true to update prices")
-	flag.BoolVar(&UpdateDividend, "d", false, "use -d=true to update dividend")
+	flag.BoolVar(&UpdatePrices, "p", false, "use -p to update prices")
+	flag.StringVar(&UpdateDividend, "d", "", "use -d 'stock_number' to update dividend")
 	flag.Parse()
 }
 
@@ -23,7 +23,7 @@ func main() {
 	if UpdatePrices {
 		c.UpdatePrices()
 	}
-	if UpdateDividend {
-		c.UpdateDividend("2884")
+	if UpdateDividend != "" {
+		c.UpdateDividend(UpdateDividend)
 	}
 }

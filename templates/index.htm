@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>股票紅綠燈</title>
+    </head>
+    <body>
+        <h1>股票紅綠燈</h1>
+        <form action="/" method="get">
+            股票名稱或代號：<input type="text" name="id" id="">
+        </form>
+        <table>
+        {{range .stocks}}
+            <tr>
+                <td>{{.ID}}</td>
+                <td>{{.Name}}</td>
+                <td>{{percent .Price}}</td>
+                {{range .Returns}}
+                <td bgcolor="{{getColor .}}">{{percent .}}%</td>
+                {{end}}
+            </tr>
+        {{end}}
+        </table>
+    </body>
+</html>

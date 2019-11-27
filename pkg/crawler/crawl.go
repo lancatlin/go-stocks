@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/lancatlin/go-stocks/pkg/model"
@@ -11,30 +12,38 @@ import (
 	"strings"
 )
 
+var (
+	ErrStockNotFound = errors.New("stock not found")
+)
+
 type Crawler struct {
-	db *gorm.DB
+	*gorm.DB
 }
 
 func New(db *gorm.DB) Crawler {
 	return Crawler{db}
 }
 
-func (c Crawler) UpdatePrices() {
-	file := download("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
-	if err := c.importToDatabase(file); err != nil {
-		panic(err)
+func (c Crawler) UpdatePrices() (err error) {
+	file, err := download("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
+	if err != nil {
+		return
 	}
+	if err = c.importToDatabase(file); err != nil {
+		return
+	}
+	return nil
 }
 
-func download(url string) io.ReadCloser {
+func download(url string) (io.ReadCloser, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return nil, ErrStockNotFound
 	}
 	if resp.StatusCode != 200 {
-		panic(resp)
+		return nil, ErrStockNotFound
 	}
-	return resp.Body
+	return resp.Body, err
 }
 
 func (c Crawler) importToDatabase(file io.ReadCloser) (err error) {
@@ -56,10 +65,10 @@ func (c Crawler) importToDatabase(file io.ReadCloser) (err error) {
 
 func (c Crawler) save(obj interface{}) {
 	var method func(interface{}) *gorm.DB
-	if c.db.NewRecord(obj) {
-		method = c.db.Create
+	if c.NewRecord(obj) {
+		method = c.Create
 	} else {
-		method = c.db.Save
+		method = c.Save
 	}
 	if err := method(obj).Error; err != nil {
 		panic(err)
@@ -76,13 +85,4 @@ func parseStock(record []string) (stock model.Stock) {
 		panic(err)
 	}
 	return
-}
-
-func openDB() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "db.sqlite")
-	if err != nil {
-		panic(err)
-	}
-	db.AutoMigrate(&model.Stock{})
-	return db
 }

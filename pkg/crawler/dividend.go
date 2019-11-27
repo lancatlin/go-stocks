@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/lancatlin/go-stocks/pkg/model"
 	"strconv"
@@ -8,12 +9,16 @@ import (
 
 func (c Crawler) UpdateDividend(id string) {
 	for _, dividend := range crawlDividend(id) {
-		c.save(dividend)
+		fmt.Println(dividend)
+		c.save(&dividend)
 	}
 }
 
 func crawlDividend(id string) []model.Dividend {
-	page := download("https://tw.stock.yahoo.com/d/s/dividend_" + id + ".html")
+	page, err := download("https://tw.stock.yahoo.com/d/s/dividend_" + id + ".html")
+	if err != nil {
+		return []model.Dividend{}
+	}
 	doc, err := goquery.NewDocumentFromReader(page)
 	if err != nil {
 		panic(err)

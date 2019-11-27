@@ -1,3 +1,4 @@
 db.odb
 .env
 cmd/crawler/crawler
+cmd/web/web
