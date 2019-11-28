@@ -6,6 +6,7 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/crawler"
 	"html/template"
 	"strings"
+	"time"
 )
 
 const (
@@ -15,7 +16,10 @@ const (
 )
 
 type Handler struct {
+	config.Config
 	crawler.Crawler
+	ask chan bool
+	ans chan time.Time
 }
 
 func Registry(conf config.Config) *gin.Engine {
@@ -25,6 +29,9 @@ func Registry(conf config.Config) *gin.Engine {
 	router.SetFuncMap(template.FuncMap{
 		"getColor": getColor,
 		"percent":  percent,
+		"formatTime": func(t time.Time) string {
+			return t.Format("2006-01-02 03:04:05")
+		},
 	})
 	router.LoadHTMLGlob("../../templates/*.htm")
 	router.Static("/static", "../../static")
@@ -34,12 +41,16 @@ func Registry(conf config.Config) *gin.Engine {
 	{
 		api.GET("/stock-id")
 	}
+	go handler.UpdatePricesRegularly()
 	return router
 }
 
 func New(conf config.Config) Handler {
 	return Handler{
-		crawler.New(conf.DB),
+		Config: conf,
+		Crawler: crawler.New(conf.DB),
+		ask: make(chan bool, 1),
+		ans: make(chan time.Time, 1),
 	}
 }
 
@@ -49,9 +60,11 @@ func (h Handler) Index(c *gin.Context) {
 	for i, id := range IDs {
 		result[i] = h.RYG(id)
 	}
+	h.ask <- true
 	page := gin.H{
 		"query":  hasQuery(c),
 		"stocks": result,
+		"UpdatedAt": <- h.ans,
 	}
 	c.HTML(200, "index.htm", page)
 }

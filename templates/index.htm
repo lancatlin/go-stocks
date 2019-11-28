@@ -10,6 +10,7 @@
         <form action="/" method="get">
             股票名稱或代號：<input type="text" name="id" id="">
         </form>
+        <p>更新時間：{{ formatTime .UpdatedAt }}</p>
         <table>
         {{ $hasQuery := .query}}
         {{range .stocks}}

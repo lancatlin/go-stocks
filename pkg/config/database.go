@@ -7,6 +7,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/lancatlin/go-stocks/pkg/model"
 	"os"
+	"time"
+	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -18,9 +20,18 @@ const (
 	ReleaseMode Mode = "release mode"
 )
 
+func getUpdateTime() time.Duration {
+	n, err := strconv.Atoi(os.Getenv("UPDATE"))
+	if err != nil {
+		n = 10
+	}
+	return time.Minute * time.Duration(n)
+}
+
 type Config struct {
 	Mode Mode
 	DB   *gorm.DB
+	Update time.Duration
 	Host string
 	Port string
 }
@@ -30,6 +41,9 @@ func New() Config {
 	config := Config{
 		Mode: mode,
 		DB:   openDB(mode),
+		Update: getUpdateTime(),
+		Host: os.Getenv("HOST"),
+		Port: os.Getenv("PORT"),
 	}
 	return config
 }
