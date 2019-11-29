@@ -30,7 +30,11 @@ func Registry(conf config.Config) *gin.Engine {
 		"getColor": getColor,
 		"percent":  percent,
 		"formatTime": func(t time.Time) string {
-			return t.Format("2006-01-02 03:04:05")
+			zone, err := time.LoadLocation("Asia/Taipei")
+			if err != nil {
+				panic(err)
+			}
+			return t.In(zone).Format("2006-01-02 15:04:05")
 		},
 	})
 	router.LoadHTMLGlob("../../templates/*.htm")
@@ -39,7 +43,7 @@ func Registry(conf config.Config) *gin.Engine {
 	router.GET("/", handler.Index)
 	api := router.Group("/api")
 	{
-		api.GET("/stock-id")
+		api.GET("/search", handler.searchStock)
 	}
 	go handler.UpdatePricesRegularly()
 	return router

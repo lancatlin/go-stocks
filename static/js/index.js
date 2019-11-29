@@ -19,3 +19,37 @@ function remove(id) {
     Cookies.set('id', stocks.join('&'), { expires: 365 })
     document.getElementById(`tr-${id}`).remove()
 }
+
+function search(input) {
+    let q = input.value
+    console.log(q)
+    let xhttp = new XMLHttpRequest()
+    xhttp.open("GET", `/api/search?q=${q}`)
+    xhttp.onreadystatechange = function () {
+        if (this.readyState != 4) {
+            return
+        }
+        if (this.status == 200) {
+            console.log(this.status)
+            update(parse(this.responseText))
+        }
+    }
+    xhttp.send()
+}
+
+function parse(text) {
+    return JSON.parse(text)
+}
+
+function update(stocks) {
+    let datalist = document.getElementById("data")
+    while (datalist.firstChild) {
+        datalist.removeChild(datalist.firstChild);
+    }
+    for (stock of stocks) {
+        let elem = document.createElement("option")
+        elem.value = stock.ID
+        elem.innerText = stock.ID + stock.Name
+        datalist.appendChild(elem)
+    }
+}
