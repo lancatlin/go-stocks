@@ -37,8 +37,8 @@ func Registry(conf config.Config) *gin.Engine {
 			return t.In(zone).Format("2006-01-02 15:04:05")
 		},
 	})
-	router.LoadHTMLGlob("../../templates/*.htm")
-	router.Static("/static", "../../static")
+	router.LoadHTMLGlob("./templates/*.htm")
+	router.Static("/static", "./static")
 
 	router.GET("/", handler.Index)
 	api := router.Group("/api")
@@ -51,10 +51,10 @@ func Registry(conf config.Config) *gin.Engine {
 
 func New(conf config.Config) Handler {
 	return Handler{
-		Config: conf,
+		Config:  conf,
 		Crawler: crawler.New(conf.DB),
-		ask: make(chan bool, 1),
-		ans: make(chan time.Time, 1),
+		ask:     make(chan bool, 1),
+		ans:     make(chan time.Time, 1),
 	}
 }
 
@@ -66,9 +66,9 @@ func (h Handler) Index(c *gin.Context) {
 	}
 	h.ask <- true
 	page := gin.H{
-		"query":  hasQuery(c),
-		"stocks": result,
-		"UpdatedAt": <- h.ans,
+		"query":     hasQuery(c),
+		"stocks":    result,
+		"UpdatedAt": <-h.ans,
 	}
 	c.HTML(200, "index.htm", page)
 }
