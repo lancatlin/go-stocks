@@ -3,7 +3,6 @@ package crawler
 import (
 	"encoding/csv"
 	"errors"
-	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/lancatlin/go-stocks/pkg/model"
 	"io"
@@ -64,7 +63,7 @@ func (c Crawler) importToDatabase(file io.ReadCloser, parse func([]string) model
 			break
 		}
 		stock := parse(record)
-		fmt.Println(stock)
+		// fmt.Println(stock)
 		c.save(&stock)
 	}
 	return nil
