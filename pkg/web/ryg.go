@@ -1,14 +1,14 @@
 package web
 
 import (
-	"github.com/lancatlin/go-stocks/pkg/model"
 	"github.com/jinzhu/gorm"
+	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
 type RYG struct {
 	ID      string
 	Name    string
-	Price float64
+	Price   float64
 	Returns []float64
 }
 
@@ -33,9 +33,9 @@ func (h Handler) RYG(id string) RYG {
 	}
 
 	ryg := RYG{
-		ID:      id,
+		ID:      stock.ID,
 		Name:    stock.Name,
-		Price: stock.Price,
+		Price:   stock.Price,
 		Returns: make([]float64, 3),
 	}
 	for i, y := range []int{1, 5, 10} {

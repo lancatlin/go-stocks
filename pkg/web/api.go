@@ -1,13 +1,13 @@
 package web
 
 import (
-	"github.com/gin-gonic/gin"
 	"fmt"
+	"github.com/gin-gonic/gin"
 )
 
 func (h Handler) searchStock(c *gin.Context) {
 	type Stock struct {
-		ID string
+		ID   string
 		Name string
 	}
 	var stocks []Stock
@@ -16,7 +16,7 @@ func (h Handler) searchStock(c *gin.Context) {
 		return
 	}
 	query := fmt.Sprintf("%%%s%%", c.Query("q"))
-	err := h.Where("id LIKE ?", query).Or("name LIKE ?", query).Find(&stocks).Error
+	err := h.Limit(10).Where("id LIKE ?", query).Or("name LIKE ?", query).Find(&stocks).Error
 	if err != nil {
 		panic(err)
 	}
