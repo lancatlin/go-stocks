@@ -7,13 +7,13 @@ li {
 	margin-top: -1px;
 	width: 200px;
 	list-style-type: none;
-	display: block;
 	padding: 12px;
 }
 
 li a {
 	text-decoration: none;
 	color: black;
+	display: block;
 }
 
 li:hover {
