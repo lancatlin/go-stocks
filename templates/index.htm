@@ -2,13 +2,16 @@
 <html>
     <head>
         <title>股票紅綠燈</title>
+		<link type="text/css" href="/static/css/style.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
         <script src="/static/js/index.js"></script>
     </head>
     <body>
         <h1><a href="/">股票紅綠燈</a></h1>
         <form action="/" method="get">
-            股票名稱或代號：<input type="text" name="id" id="" autocomplete="off">
+            股票名稱或代號：<input type="text" name="id" id="" oninput="search(this)" autocomplete="off">
+			<ul id="data">
+			</ul>
         </form>
         <p>更新時間：{{ formatTime .UpdatedAt }}</p>
         <table>

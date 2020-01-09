@@ -3,12 +3,14 @@ package crawler
 import (
 	"encoding/csv"
 	"errors"
-	"github.com/jinzhu/gorm"
-	"github.com/lancatlin/go-stocks/pkg/model"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/jinzhu/gorm"
+	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
 var (
@@ -24,6 +26,7 @@ func New(db *gorm.DB) Crawler {
 }
 
 func (c Crawler) UpdatePrices() (err error) {
+	fmt.Println("Start crawling")
 	file, err := download("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data")
 	if err != nil {
 		return
@@ -38,6 +41,7 @@ func (c Crawler) UpdatePrices() (err error) {
 	if err = c.importToDatabase(file, parseStockCounter); err != nil {
 		return
 	}
+	fmt.Println("End crawling")
 	return nil
 }
 
@@ -63,7 +67,6 @@ func (c Crawler) importToDatabase(file io.ReadCloser, parse func([]string) model
 			break
 		}
 		stock := parse(record)
-		// fmt.Println(stock)
 		c.save(&stock)
 	}
 	return nil

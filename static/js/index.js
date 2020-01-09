@@ -22,6 +22,9 @@ function remove(id) {
 
 function search(input) {
     let q = input.value
+	if (q == "") {
+		clear()
+	}
     console.log(q)
     let xhttp = new XMLHttpRequest()
     xhttp.open("GET", `/api/search?q=${q}`)
@@ -42,14 +45,25 @@ function parse(text) {
 }
 
 function update(stocks) {
+	clear()
+    for (stock of stocks) {
+		addChild(stock)
+    }
+}
+
+function clear() {
     let datalist = document.getElementById("data")
     while (datalist.firstChild) {
         datalist.removeChild(datalist.firstChild);
     }
-    for (stock of stocks) {
-        let elem = document.createElement("option")
-        elem.value = stock.ID
-        elem.innerText = stock.ID + stock.Name
-        datalist.appendChild(elem)
-    }
+}
+
+function addChild(stock) {
+    let datalist = document.getElementById("data")
+	let li = document.createElement("li")
+	let elem = document.createElement("a")
+	elem.href = `/?id=${stock.ID}`
+	elem.innerText = stock.ID + stock.Name
+	li.appendChild(elem)
+	datalist.appendChild(li)
 }
