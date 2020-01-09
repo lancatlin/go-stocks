@@ -45,6 +45,7 @@ func Registry(conf config.Config) *gin.Engine {
 	{
 		api.GET("/search", handler.searchStock)
 	}
+	router.GET("/set", handler.SetCookie)
 	go handler.UpdatePricesRegularly()
 	return router
 }
@@ -85,4 +86,17 @@ func loadIDs(c *gin.Context) (IDs []string) {
 
 func hasQuery(c *gin.Context) bool {
 	return c.Query("id") != ""
+}
+
+func (h Handler) SetCookie(c *gin.Context) {
+	IDs := loadIDs(c)
+	if query := c.Query("cookie"); query != "" {
+		IDs = append(IDs, splitIDs(query)...)
+	}
+	c.SetCookie("id", strings.Join(IDs, "&"), 0, "/", h.Config.Host, false, true)
+	c.Redirect(303, "/")
+}
+
+func splitIDs(s string) (ids []string) {
+	return strings.Split(s, "-")
 }
