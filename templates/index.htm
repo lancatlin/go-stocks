@@ -31,7 +31,7 @@
             <tr id='tr-{{ .ID }}'>
             {{ if not .IsNil }}
                 <td>{{.ID}}</td>
-                <td>{{.Name}}</td>
+                <td><a href="https://tw.stock.yahoo.com/q/bc?s={{.ID}}">{{.Name}}</a></td>
                 <td>{{percent .Price}}</td>
                 {{range .Returns}}
                     <td bgcolor="{{getColor .}}">{{percent .}}%</td>
