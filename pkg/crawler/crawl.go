@@ -76,7 +76,7 @@ func (c Crawler) importToDatabase(filename string, parse func([]string) model.St
 
 func (c Crawler) save(obj interface{}) {
 	var method func(interface{}) *gorm.DB
-	if c.NewRecord(obj) {
+	if c.First(obj).RecordNotFound() {
 		method = c.Create
 	} else {
 		method = func(obj interface{}) *gorm.DB { return c.First(obj).Updates(obj) }
