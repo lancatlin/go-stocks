@@ -16,7 +16,7 @@ func (h Handler) UpdatePricesRegularly() {
 		case <-update:
 			go func() {
 				fmt.Println("receive event")
-				if err := h.UpdatePrices(); err != nil {
+				if err := h.UpdateInfo(); err != nil {
 					fmt.Println(err)
 				}
 				fmt.Println("\n\n\nupdate at", last, "\n\n\n")
@@ -25,7 +25,7 @@ func (h Handler) UpdatePricesRegularly() {
 			}()
 		case <-h.ask:
 			h.ans <- last
-		case last = <- res:
+		case last = <-res:
 			fmt.Println("last is", last)
 		}
 	}
@@ -33,12 +33,12 @@ func (h Handler) UpdatePricesRegularly() {
 
 func (h Handler) after(callback, keep chan bool) {
 	callback <- true
-	<- keep
+	<-keep
 	for {
 		select {
 		case <-time.After(h.Update):
 			callback <- true
-			<- keep
+			<-keep
 		}
 	}
 }

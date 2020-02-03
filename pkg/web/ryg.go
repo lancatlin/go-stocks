@@ -6,9 +6,7 @@ import (
 )
 
 type RYG struct {
-	ID      string
-	Name    string
-	Price   float64
+	model.Stock
 	Returns []float64
 }
 
@@ -33,9 +31,7 @@ func (h Handler) RYG(id string) RYG {
 	}
 
 	ryg := RYG{
-		ID:      stock.ID,
-		Name:    stock.Name,
-		Price:   stock.Price,
+		Stock:   stock,
 		Returns: make([]float64, 3),
 	}
 	for i, y := range []int{1, 5, 10} {

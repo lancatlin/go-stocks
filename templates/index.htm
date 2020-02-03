@@ -16,6 +16,15 @@
         </form>
         <p>更新時間：{{ formatTime .UpdatedAt }}</p>
         <table>
+            <tr>
+                <th>股票號碼</th>
+                <th>股票名稱</th>
+                <th>收盤價</th>
+                <th>一年</th>
+                <th>五年</th>
+                <th>十年</th>
+                <th>營收成長率</th>
+            </tr>
         {{ $hasQuery := .query}}
         {{range .stocks}}
             <tr id='tr-{{ .ID }}'>
@@ -24,8 +33,9 @@
                 <td>{{.Name}}</td>
                 <td>{{percent .Price}}</td>
                 {{range .Returns}}
-                <td bgcolor="{{getColor .}}">{{percent .}}%</td>
+                    <td bgcolor="{{getColor .}}">{{percent .}}%</td>
                 {{end}}
+                <td>{{ percent .CompareLastYear }}%</td>
                 <td>
                 {{ if $hasQuery }}
                     <button type="button" onclick="save({{ .ID }})">釘選</button>
