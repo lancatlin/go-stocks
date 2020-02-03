@@ -1,6 +1,9 @@
 package web
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func getColor(n float64) string {
 	switch {
@@ -16,4 +19,8 @@ func getColor(n float64) string {
 
 func percent(n float64) string {
 	return fmt.Sprintf("%.2f", n)
+}
+
+func (h Handler) shareLink(IDs []string) string {
+	return fmt.Sprintf("%s/set/%s", h.Config.Base, strings.Join(IDs, "-"))
 }

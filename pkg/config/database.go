@@ -7,8 +7,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/lancatlin/go-stocks/pkg/model"
 	"os"
-	"time"
 	"strconv"
+	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -29,21 +29,23 @@ func getUpdateTime() time.Duration {
 }
 
 type Config struct {
-	Mode Mode
-	DB   *gorm.DB
+	Mode   Mode
+	DB     *gorm.DB
 	Update time.Duration
-	Host string
-	Port string
+	Host   string
+	Port   string
+	Base   string
 }
 
 func New() Config {
 	mode := ReleaseMode
 	config := Config{
-		Mode: mode,
-		DB:   openDB(mode),
+		Mode:   mode,
+		DB:     openDB(mode),
 		Update: getUpdateTime(),
-		Host: os.Getenv("HOST"),
-		Port: os.Getenv("PORT"),
+		Host:   os.Getenv("HOST"),
+		Port:   os.Getenv("PORT"),
+		Base:   os.Getenv("BASE"),
 	}
 	return config
 }

@@ -45,7 +45,7 @@ func Registry(conf config.Config) *gin.Engine {
 	{
 		api.GET("/search", handler.searchStock)
 	}
-	router.GET("/set", handler.SetCookie)
+	router.GET("/set/:cookie", handler.SetCookie)
 	go handler.UpdatePricesRegularly()
 	return router
 }
@@ -70,6 +70,7 @@ func (h Handler) Index(c *gin.Context) {
 		"query":     hasQuery(c),
 		"stocks":    result,
 		"UpdatedAt": <-h.ans,
+		"ShareLink": h.shareLink(IDs),
 	}
 	c.HTML(200, "index.htm", page)
 }
@@ -90,7 +91,7 @@ func hasQuery(c *gin.Context) bool {
 
 func (h Handler) SetCookie(c *gin.Context) {
 	IDs := loadIDs(c)
-	if query := c.Query("cookie"); query != "" {
+	if query := c.Param("cookie"); query != "" {
 		IDs = append(IDs, splitIDs(query)...)
 	}
 	c.SetCookie("id", strings.Join(IDs, "&"), 0, "/", h.Config.Host, false, true)
