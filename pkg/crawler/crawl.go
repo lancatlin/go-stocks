@@ -114,9 +114,13 @@ func parseStockCounter(record []string) (stock model.Stock) {
 func (c Crawler) parseRevenue(record []string) (stock model.Stock) {
 	stock.ID = record[2]
 	var err error
-	stock.CompareLastYear, err = strconv.ParseFloat(record[9], 64)
+	stock.MonthRevenue, err = strconv.ParseFloat(record[9], 64)
 	if err != nil {
-		stock.CompareLastYear = 0
+		stock.MonthRevenue = 0
+	}
+	stock.YearRevenue, err = strconv.ParseFloat(record[12], 64)
+	if err != nil {
+		stock.YearRevenue = 0
 	}
 	return
 }

@@ -23,7 +23,8 @@
                 <th>一年</th>
                 <th>五年</th>
                 <th>十年</th>
-                <th>營收成長率</th>
+                <th>月營收</th>
+                <th>年營收</th>
             </tr>
         {{ $hasQuery := .query}}
         {{range .stocks}}
@@ -35,7 +36,8 @@
                 {{range .Returns}}
                     <td bgcolor="{{getColor .}}">{{percent .}}%</td>
                 {{end}}
-                <td>{{ percent .CompareLastYear }}%</td>
+                <td>{{ percent .MonthRevenue }}%</td>
+                <td>{{ percent .YearRevenue }}%</td>
                 <td>
                 {{ if $hasQuery }}
                     <button type="button" onclick="save({{ .ID }})">釘選</button>

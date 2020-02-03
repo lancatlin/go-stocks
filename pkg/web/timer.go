@@ -9,7 +9,7 @@ func (h Handler) UpdatePricesRegularly() {
 	var last time.Time
 	update := make(chan bool)
 	keep := make(chan bool)
-	res := make(chan time.Time)
+	reset := make(chan time.Time)
 	go h.after(update, keep)
 	for {
 		select {
@@ -20,12 +20,12 @@ func (h Handler) UpdatePricesRegularly() {
 					fmt.Println(err)
 				}
 				fmt.Println("\n\n\nupdate at", last, "\n\n\n")
-				res <- time.Now()
+				reset <- time.Now()
 				keep <- true
 			}()
 		case <-h.ask:
 			h.ans <- last
-		case last = <-res:
+		case last = <-reset:
 			fmt.Println("last is", last)
 		}
 	}
