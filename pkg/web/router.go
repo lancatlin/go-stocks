@@ -45,7 +45,11 @@ func Registry(conf config.Config) *gin.Engine {
 	{
 		api.GET("/search", handler.searchStock)
 	}
+<<<<<<< HEAD
 	router.GET("/set/:cookie", handler.SetCookie)
+=======
+	router.GET("/set", handler.SetCookie)
+>>>>>>> 45651b457100a0abb01d40bb17879e46b1ceb459
 	go handler.UpdatePricesRegularly()
 	return router
 }
