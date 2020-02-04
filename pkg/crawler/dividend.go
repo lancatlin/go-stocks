@@ -10,7 +10,20 @@ import (
 func (c Crawler) UpdateDividend(id string) {
 	for _, dividend := range crawlDividend(id) {
 		fmt.Println(dividend)
-		c.save(&dividend)
+		c.saveDividend(dividend)
+	}
+}
+
+func (c Crawler) saveDividend(d model.Dividend) {
+	var err error
+	if c.First(&model.Dividend{}, "stock_id = ? && year = ?", d.StockID, d.Year).RecordNotFound() {
+		err = c.Create(&d).Error
+	} else {
+		err = c.Model(&d).Updates(d).Error
+	}
+	if err != nil {
+		fmt.Println(d)
+		panic(err)
 	}
 }
 

@@ -21,7 +21,7 @@ func main() {
 	conf := config.New()
 	c := crawler.New(conf.DB)
 	if UpdatePrices {
-		c.UpdatePrices()
+		c.UpdateInfo()
 	}
 	if UpdateDividend != "" {
 		c.UpdateDividend(UpdateDividend)

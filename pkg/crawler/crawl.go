@@ -69,20 +69,20 @@ func (c Crawler) importToDatabase(filename string, parse func([]string) model.St
 			break
 		}
 		stock := parse(record)
-		c.save(&stock)
+		c.saveStock(stock)
 	}
 	return nil
 }
 
-func (c Crawler) save(obj interface{}) {
-	var method func(interface{}) *gorm.DB
-	if c.First(obj).RecordNotFound() {
-		method = c.Create
+func (c Crawler) saveStock(stock model.Stock) {
+	var err error
+	if c.First(&model.Stock{}, "id = ?", stock.ID).RecordNotFound() {
+		err = c.Create(&stock).Error
 	} else {
-		method = func(obj interface{}) *gorm.DB { return c.First(obj).Updates(obj) }
+		err = c.Model(&stock).Updates(stock).Error
 	}
-	if err := method(obj).Error; err != nil {
-		fmt.Println(obj)
+	if err != nil {
+		fmt.Println(stock)
 		panic(err)
 	}
 }
