@@ -5,7 +5,8 @@ import "time"
 type Type uint
 
 const (
-	TypePrice Type = iota
+	TypePriceListed Type = iota
+	TypePriceCounter
 	TypeDividend
 	TypeRevenue
 )

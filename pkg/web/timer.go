@@ -36,7 +36,7 @@ func (h Handler) after(callback, keep chan bool) {
 	<-keep
 	for {
 		select {
-		case <-time.After(h.Update):
+		case <-time.After(time.Duration(h.Update) * time.Minute):
 			callback <- true
 			<-keep
 		}

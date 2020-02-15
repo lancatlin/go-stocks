@@ -12,3 +12,6 @@ run:
 
 test:
 	$(GOTEST) ./...
+
+vet:
+	$(GO) vet ./cmd/web

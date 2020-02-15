@@ -8,12 +8,12 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
-func hashString(data string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(data)))
+func hashString(data interface{}) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprint(data))))
 }
 
 func (c Crawler) isDivSame(id string, divs []model.Dividend) (bool, string) {
-	hash := hashString(fmt.Sprint(divs))
+	hash := hashString(divs)
 	fmt.Println(hash)
 	var last model.Record
 	err := c.Where("type = ? and stock_id = ?", model.TypeDividend, id).Order("updated_at desc").First(&last).Error

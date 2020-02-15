@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
+	"github.com/lancatlin/go-stocks/pkg/config"
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
@@ -20,15 +22,31 @@ var (
 
 type Crawler struct {
 	*gorm.DB
+	Config config.Config
 }
 
-func New(db *gorm.DB) Crawler {
-	return Crawler{db}
+func New(config config.Config) Crawler {
+	return Crawler{config.DB, config}
+}
+
+func (c Crawler) UpdateInfo() (err error) {
+	if !c.isExpire() {
+		return
+	}
+	fmt.Println("Start crawling")
+	if err = c.importToDatabase(model.TypePriceListed, c.Config.URL.Listed, parseStockListed); err != nil {
+		return
+	}
+	if err = c.importToDatabase(model.TypePriceCounter, c.Config.URL.Counter, parseStockCounter); err != nil {
+		return
+	}
+	fmt.Println("End crawling")
+	return nil
 }
 
 func (c Crawler) isExpire() bool {
 	var last model.Record
-	err := c.Where("type = ? && expire_at > CURTIME()", model.TypePrice).First(&last).Error
+	err := c.Where("type = ? and expire_at > ?", model.TypePriceListed, time.Now()).First(&last).Error
 	if gorm.IsRecordNotFoundError(err) {
 		return true
 	} else if err != nil {
@@ -38,51 +56,53 @@ func (c Crawler) isExpire() bool {
 	return false
 }
 
-func (c Crawler) UpdateInfo() (err error) {
-	if !c.isExpire() {
-		return
-	}
-	fmt.Println("Start crawling")
-	if err = c.importToDatabase("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data", parseStockListed); err != nil {
-		return
-	}
-	if err = c.importToDatabase("http://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data", parseStockCounter); err != nil {
-		return
-	}
-	c.updatePriceRecord()
-	fmt.Println("End crawling")
-	return nil
-}
-
-func download(url string) (io.ReadCloser, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, ErrStockNotFound
-	}
-	if resp.StatusCode != 200 {
-		return nil, ErrStockNotFound
-	}
-	return resp.Body, err
-}
-
-func (c Crawler) importToDatabase(filename string, parse func([]string) model.Stock) (err error) {
+func (c Crawler) importToDatabase(t model.Type, filename string, parse func([]string) model.Stock) (err error) {
 	file, err := download(filename)
 	if err != nil {
 		return
 	}
-	defer file.Close()
-	reader := csv.NewReader(file)
-	// ignore first line
-	reader.Read()
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
+
+	if same, hash := c.isDataSame(file, t); !same {
+		reader := csv.NewReader(strings.NewReader(file))
+		// ignore first line
+		reader.Read()
+		for {
+			record, err := reader.Read()
+			if err == io.EOF {
+				break
+			}
+			stock := parse(record)
+			c.saveStock(stock)
 		}
-		stock := parse(record)
-		c.saveStock(stock)
+		c.updatePriceRecord(t, hash)
 	}
 	return nil
+}
+
+func download(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", ErrStockNotFound
+	}
+	if resp.StatusCode != 200 {
+		return "", ErrStockNotFound
+	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	resp.Body.Close()
+	return string(data), err
+}
+
+func (c Crawler) isDataSame(file string, t model.Type) (bool, string) {
+	hash := hashString(file)
+	var last model.Record
+	err := c.Where("type = ?", t).Order("updated_at desc").First(&last).Error
+	if gorm.IsRecordNotFoundError(err) {
+		return false, hash
+	}
+	return hash == last.Hash, hash
 }
 
 func (c Crawler) saveStock(stock model.Stock) {
@@ -136,10 +156,11 @@ func (c Crawler) parseRevenue(record []string) (stock model.Stock) {
 	return
 }
 
-func (c Crawler) updatePriceRecord() {
+func (c Crawler) updatePriceRecord(t model.Type, hash string) {
 	now := time.Now()
 	record := model.Record{
-		Type:      model.TypePrice,
+		Type:      t,
+		Hash:      hash,
 		UpdatedAt: now,
 	}
 	expire := time.Date(now.Year(), now.Month(), now.Day(), 14, 0, 0, 0, time.Local)

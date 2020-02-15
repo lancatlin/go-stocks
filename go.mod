@@ -8,6 +8,9 @@ require (
 	github.com/gin-gonic/gin v1.5.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/joho/godotenv v1.3.0
+	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/naoina/go-stringutil v0.1.0 // indirect
+	github.com/naoina/toml v0.1.1
 	github.com/rakyll/statik v0.1.6 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1
 )

@@ -3,6 +3,7 @@ package crawler
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -15,7 +16,7 @@ func (c Crawler) UpdateDividends() (err error) {
 	fmt.Println(stocks)
 	for _, stockID := range stocks {
 		if c.isDividendExpire(stockID) {
-			c.updateDividend(stockID)
+			c.UpdateDividend(stockID)
 		}
 	}
 	return nil
@@ -39,7 +40,7 @@ func (c Crawler) findStocks() (stocks []string) {
 
 func (c Crawler) isDividendExpire(stock string) bool {
 	var last model.Record
-	err := c.Where("type = ? and stock_id = ? and expire_at > CURTIME()", model.TypeDividend, stock).First(&last).Error
+	err := c.Where("type = ? and stock_id = ? and expire_at > ?", model.TypeDividend, stock, time.Now()).First(&last).Error
 	if gorm.IsRecordNotFoundError(err) {
 		return true
 	} else if err != nil {
@@ -49,12 +50,14 @@ func (c Crawler) isDividendExpire(stock string) bool {
 	return false
 }
 
-func (c Crawler) updateDividend(id string) {
-	divs := crawlDividend(id)
+func (c Crawler) UpdateDividend(id string) {
+	divs := c.crawlDividend(id)
 	if same, hash := c.isDivSame(id, divs); !same {
 		for _, dividend := range divs {
 			fmt.Println(dividend)
-			c.saveDividend(dividend)
+			if err := c.saveDividend(dividend); err != nil {
+				panic(err)
+			}
 		}
 		c.updateDividendRecord(id, hash)
 	} else {
@@ -62,25 +65,21 @@ func (c Crawler) updateDividend(id string) {
 	}
 }
 
-func (c Crawler) saveDividend(d model.Dividend) {
-	var err error
-	if c.First(&model.Dividend{}, "stock_id = ? && year = ?", d.StockID, d.Year).RecordNotFound() {
+func (c Crawler) saveDividend(d model.Dividend) (err error) {
+	if c.First(&model.Dividend{}, "stock_id = ? and year = ?", d.StockID, d.Year).RecordNotFound() {
 		err = c.Create(&d).Error
 	} else {
 		err = c.Model(&d).Updates(d).Error
 	}
-	if err != nil {
-		fmt.Println(d)
-		panic(err)
-	}
+	return
 }
 
-func crawlDividend(id string) []model.Dividend {
-	page, err := download("https://tw.stock.yahoo.com/d/s/dividend_" + id + ".html")
+func (c Crawler) crawlDividend(id string) []model.Dividend {
+	file, err := download(fmt.Sprintf(c.Config.URL.Dividend, id))
 	if err != nil {
 		return []model.Dividend{}
 	}
-	doc, err := goquery.NewDocumentFromReader(page)
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(file))
 	if err != nil {
 		panic(err)
 	}

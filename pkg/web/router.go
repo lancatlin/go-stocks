@@ -1,12 +1,13 @@
 package web
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/lancatlin/go-stocks/pkg/config"
-	"github.com/lancatlin/go-stocks/pkg/crawler"
 	"html/template"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/lancatlin/go-stocks/pkg/config"
+	"github.com/lancatlin/go-stocks/pkg/crawler"
 )
 
 const (
@@ -52,7 +53,7 @@ func Registry(conf config.Config) *gin.Engine {
 func New(conf config.Config) Handler {
 	return Handler{
 		Config:  conf,
-		Crawler: crawler.New(conf.DB),
+		Crawler: crawler.New(conf),
 		ask:     make(chan bool, 1),
 		ans:     make(chan time.Time, 1),
 	}

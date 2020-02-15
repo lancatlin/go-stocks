@@ -2,9 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -14,63 +11,40 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-type Mode string
-
 const (
-	DebugMode   Mode = "debug mode"
-	ReleaseMode Mode = "release mode"
+	Debug   = "debug"
+	Release = "release"
 )
 
-func getUpdateTime() time.Duration {
-	n, err := strconv.Atoi(os.Getenv("UPDATE"))
-	if err != nil {
-		n = 10
-	}
-	return time.Minute * time.Duration(n)
-}
-
-type Config struct {
-	Mode   Mode
-	DB     *gorm.DB
-	Update time.Duration
-	Host   string
-	Port   string
-}
-
-func New() Config {
-	mode := ReleaseMode
-	config := Config{
-		Mode:   mode,
-		DB:     openDB(mode),
-		Update: getUpdateTime(),
-		Host:   os.Getenv("HOST"),
-		Port:   os.Getenv("PORT"),
-	}
-	return config
-}
-
-func openDB(mode Mode) (db *gorm.DB) {
+func (c *Config) openDB() (db *gorm.DB) {
 	var err error
-	switch mode {
-	case DebugMode:
-		db, err = gorm.Open("sqlite3", "/tmp/gorm.db")
-	case ReleaseMode:
-		conf := struct {
-			Database string
-			User     string
-			Password string
-		}{
-			os.Getenv("DB"),
-			os.Getenv("DB"),
-			os.Getenv("PASSWORD"),
-		}
-		db, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local", conf.User, conf.Password, conf.Database))
+	switch c.Mode {
+	case Release:
+		err = c.setMySQL()
+	default:
+		err = c.setSqlite()
 	}
 	if err != nil {
 		panic(err)
 	}
-	if err = db.AutoMigrate(&model.Stock{}, &model.Dividend{}, &model.Record{}).Error; err != nil {
+	if err = c.DB.AutoMigrate(
+		&model.Stock{}, &model.Dividend{}, &model.Record{},
+	).Error; err != nil {
 		panic(err)
 	}
 	return db
+}
+
+func (c *Config) setSqlite() (err error) {
+	c.DB, err = gorm.Open("sqlite3", "/tmp/gorm.db")
+	return
+}
+
+func (c *Config) setMySQL() (err error) {
+	c.DB, err = gorm.Open(
+		"mysql", fmt.Sprintf(
+			"%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
+			c.Database.User, c.Database.Password, c.Database.Name,
+		))
+	return
 }

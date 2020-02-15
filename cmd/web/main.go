@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/lancatlin/go-stocks/pkg/config"
 	"github.com/lancatlin/go-stocks/pkg/web"
 )
@@ -8,7 +10,9 @@ import (
 func main() {
 	conf := config.New()
 	router := web.Registry(conf)
-	if err := router.Run(conf.Host + ":" + conf.Port); err != nil {
+	fmt.Printf("Running in %s mode", conf.Mode)
+	if err := router.Run(
+		fmt.Sprintf("%s:%d", conf.Server.Host, conf.Server.Port)); err != nil {
 		panic(err)
 	}
 }
