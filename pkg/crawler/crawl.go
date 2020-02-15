@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/lancatlin/go-stocks/pkg/model"
@@ -25,7 +26,22 @@ func New(db *gorm.DB) Crawler {
 	return Crawler{db}
 }
 
+func (c Crawler) isExpire() bool {
+	var last model.Record
+	err := c.Where("type = ? && expire_at > CURTIME()", model.TypePrice).First(&last).Error
+	if gorm.IsRecordNotFoundError(err) {
+		return true
+	} else if err != nil {
+		panic(err)
+	}
+	fmt.Println(last)
+	return false
+}
+
 func (c Crawler) UpdateInfo() (err error) {
+	if !c.isExpire() {
+		return
+	}
 	fmt.Println("Start crawling")
 	if err = c.importToDatabase("http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data", parseStockListed); err != nil {
 		return
@@ -33,12 +49,7 @@ func (c Crawler) UpdateInfo() (err error) {
 	if err = c.importToDatabase("http://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data", parseStockCounter); err != nil {
 		return
 	}
-	if err = c.importToDatabase("http://mopsfin.twse.com.tw/opendata/t187ap05_L.csv", c.parseRevenue); err != nil {
-		return
-	}
-	if err = c.importToDatabase("http://mopsfin.twse.com.tw/opendata/t187ap05_O.csv", c.parseRevenue); err != nil {
-		return
-	}
+	c.updatePriceRecord()
 	fmt.Println("End crawling")
 	return nil
 }
@@ -123,4 +134,18 @@ func (c Crawler) parseRevenue(record []string) (stock model.Stock) {
 		stock.YearRevenue = 0
 	}
 	return
+}
+
+func (c Crawler) updatePriceRecord() {
+	now := time.Now()
+	record := model.Record{
+		Type:      model.TypePrice,
+		UpdatedAt: now,
+	}
+	expire := time.Date(now.Year(), now.Month(), now.Day(), 14, 0, 0, 0, time.Local)
+	if now.Hour() > 14 {
+		expire = expire.AddDate(0, 0, 1)
+	}
+	record.ExpireAt = expire
+	c.Save(&record)
 }

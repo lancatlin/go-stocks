@@ -2,13 +2,14 @@ package config
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/lancatlin/go-stocks/pkg/model"
-	"os"
-	"time"
-	"strconv"
 
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -29,21 +30,21 @@ func getUpdateTime() time.Duration {
 }
 
 type Config struct {
-	Mode Mode
-	DB   *gorm.DB
+	Mode   Mode
+	DB     *gorm.DB
 	Update time.Duration
-	Host string
-	Port string
+	Host   string
+	Port   string
 }
 
 func New() Config {
 	mode := ReleaseMode
 	config := Config{
-		Mode: mode,
-		DB:   openDB(mode),
+		Mode:   mode,
+		DB:     openDB(mode),
 		Update: getUpdateTime(),
-		Host: os.Getenv("HOST"),
-		Port: os.Getenv("PORT"),
+		Host:   os.Getenv("HOST"),
+		Port:   os.Getenv("PORT"),
 	}
 	return config
 }
@@ -68,7 +69,7 @@ func openDB(mode Mode) (db *gorm.DB) {
 	if err != nil {
 		panic(err)
 	}
-	if err = db.AutoMigrate(&model.Stock{}, &model.Dividend{}).Error; err != nil {
+	if err = db.AutoMigrate(&model.Stock{}, &model.Dividend{}, &model.Record{}).Error; err != nil {
 		panic(err)
 	}
 	return db

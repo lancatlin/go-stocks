@@ -3,3 +3,4 @@ db.odb
 cmd/crawler/crawler
 cmd/web/web
 go-stocks
+go.sum

@@ -2,18 +2,19 @@ package main
 
 import (
 	"flag"
+
 	"github.com/lancatlin/go-stocks/pkg/config"
 	"github.com/lancatlin/go-stocks/pkg/crawler"
 )
 
 var (
 	UpdatePrices   bool
-	UpdateDividend string
+	UpdateDividend bool
 )
 
 func init() {
 	flag.BoolVar(&UpdatePrices, "p", false, "use -p to update prices")
-	flag.StringVar(&UpdateDividend, "d", "", "use -d 'stock_number' to update dividend")
+	flag.BoolVar(&UpdateDividend, "d", false, "use -d to update dividend")
 	flag.Parse()
 }
 
@@ -23,7 +24,7 @@ func main() {
 	if UpdatePrices {
 		c.UpdateInfo()
 	}
-	if UpdateDividend != "" {
-		c.UpdateDividend(UpdateDividend)
+	if UpdateDividend {
+		c.UpdateDividends()
 	}
 }
