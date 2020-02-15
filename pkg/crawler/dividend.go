@@ -50,11 +50,16 @@ func (c Crawler) isDividendExpire(stock string) bool {
 }
 
 func (c Crawler) updateDividend(id string) {
-	for _, dividend := range crawlDividend(id) {
-		fmt.Println(dividend)
-		c.saveDividend(dividend)
+	divs := crawlDividend(id)
+	if same, hash := c.isDivSame(id, divs); !same {
+		for _, dividend := range divs {
+			fmt.Println(dividend)
+			c.saveDividend(dividend)
+		}
+		c.updateDividendRecord(id, hash)
+	} else {
+		fmt.Printf("%s not change %s\n", id, hash)
 	}
-	c.updateDividendRecord(id)
 }
 
 func (c Crawler) saveDividend(d model.Dividend) {
@@ -120,11 +125,12 @@ func parseInt(s string) int {
 	return num
 }
 
-func (c Crawler) updateDividendRecord(stockID string) {
+func (c Crawler) updateDividendRecord(stockID, hash string) {
 	now := time.Now()
 	record := model.Record{
 		Type:      model.TypeDividend,
 		StockID:   stockID,
+		Hash:      hash,
 		UpdatedAt: now,
 	}
 	expire := time.Date(now.Year(), time.June, 1, 0, 0, 0, 0, time.Local)
