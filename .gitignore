@@ -4,3 +4,4 @@ cmd/crawler/crawler
 cmd/web/web
 go-stocks
 go.sum
+pkg/crawler/config.toml

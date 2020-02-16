@@ -2,23 +2,18 @@ package crawler
 
 import (
 	"fmt"
-	"io/ioutil"
 	"testing"
 	"time"
 
 	"gopkg.in/go-playground/assert.v1"
 )
 
-func getData(t *testing.T) []byte {
+func getData(t *testing.T) string {
 	page, err := download("https://matomo.wancat.cc")
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := ioutil.ReadAll(page)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return data
+	return page
 }
 
 func TestHash(t *testing.T) {

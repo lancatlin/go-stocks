@@ -28,6 +28,7 @@ type Config struct {
 		Listed   string
 		Counter  string
 		Dividend string
+		Revenue  string
 	}
 }
 

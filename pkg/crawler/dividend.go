@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -109,7 +110,8 @@ func parseDividend(s *goquery.Selection, id string) model.Dividend {
 }
 
 func parseFloat(s string) float64 {
-	num, err := strconv.ParseFloat(s, 64)
+	re := regexp.MustCompile(`-?[\d\.]+`)
+	num, err := strconv.ParseFloat(re.FindString(s), 64)
 	if err != nil {
 		panic(err)
 	}
