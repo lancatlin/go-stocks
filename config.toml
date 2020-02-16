@@ -1,4 +1,4 @@
-mode = "debug" # "debug" or "release"
+mode = "release" # "debug" or "release"
 update = 2
 
 [server]

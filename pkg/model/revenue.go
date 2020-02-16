@@ -3,8 +3,9 @@ package model
 import "time"
 
 type Revenue struct {
-	StockID      string    `gorm:"primary_key"`
-	Time         time.Time `gorm:"primary_key"`
+	RevenueID    uint `gorm:"primary_key"`
+	StockID      string
+	Time         time.Time
 	MonthRevenue float64
 	YearRevenue  float64
 }

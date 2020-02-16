@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -19,7 +18,6 @@ func (c Crawler) isExpire(t model.Type, id string) bool {
 	} else if err != nil {
 		panic(err)
 	}
-	fmt.Println(last)
 	return false
 }
 

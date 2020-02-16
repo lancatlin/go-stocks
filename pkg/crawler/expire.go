@@ -17,7 +17,7 @@ func expire(t model.Type) (expire time.Time) {
 		}
 
 	case model.TypeDividend:
-		expire := time.Date(now.Year(), time.June, 1, 0, 0, 0, 0, time.Local)
+		expire = time.Date(now.Year(), time.June, 1, 0, 0, 0, 0, time.Local)
 		if now.After(expire) {
 			expire = expire.AddDate(1, 0, 0)
 		}
