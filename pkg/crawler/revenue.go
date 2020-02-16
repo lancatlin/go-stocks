@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jinzhu/gorm"
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
@@ -26,25 +25,15 @@ func (c Crawler) AddRevenue(id string) {
 }
 
 func (c Crawler) updateRevenue(id string) (err error) {
-	if !c.isRevExpire(id) {
+	if !c.isExpire(model.TypeRevenue, id) {
 		return nil
 	}
 	revenue := c.crawlRevenue(id)
-	if same, hash := c.isRevSame(revenue); !same {
+	if same, hash := c.isSame(revenue, model.TypeRevenue, id); !same {
 		c.Save(&revenue)
-		c.updateRevRecord(id, hash)
+		c.updateRecord(model.TypeRevenue, id, hash)
 	}
 	return nil
-}
-
-func (c Crawler) isRevExpire(id string) bool {
-	err := c.Where("type = ? and stock_id = ? and expire_at > ?", model.TypeRevenue, id, time.Now()).First(&model.Record{}).Error
-	if gorm.IsRecordNotFoundError(err) {
-		return true
-	} else if err != nil {
-		panic(err)
-	}
-	return false
 }
 
 func (c Crawler) crawlRevenue(id string) (revenue model.Revenue) {
@@ -71,59 +60,23 @@ func parseRevenue(month int, s *goquery.Selection, id string) (model.Revenue, bo
 	revenue := model.Revenue{
 		StockID: id,
 	}
-	fmt.Printf("Month is %d\n", month)
-	fmt.Println(s.Text())
+
 	now := time.Now()
 	if now.Month() == time.January {
 		revenue.Time = time.Date(now.Year()-1, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
 	} else {
 		revenue.Time = time.Date(now.Year(), time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
 	}
-	ok := true
-	s.Children().EachWithBreak(func(i int, s *goquery.Selection) bool {
-		switch i {
-		case 5:
-			// If data is unvalid, return false
-			if s.Text() == "-" {
-				ok = false
-				return false
-			}
-			revenue.MonthRevenue = parseFloat(s.Text())
-		case 7:
-			if s.Text() == "-" {
-				ok = false
-				return false
-			}
-			revenue.YearRevenue = parseFloat(s.Text())
-		}
-		return true
-	})
+
+	c := s.Children()
+	m := c.Get(5).FirstChild.Data
+	y := c.Get(7).FirstChild.Data
+	if m == "-" || y == "-" {
+		return revenue, false
+	}
+
+	revenue.MonthRevenue = parseFloat(m)
+	revenue.YearRevenue = parseFloat(y)
 	fmt.Println(revenue)
-	return revenue, ok
-}
-
-func (c Crawler) isRevSame(revenue model.Revenue) (bool, string) {
-	hash := hashString(revenue)
-	var last model.Record
-	err := c.Where("type = ? and stock_id = ?", model.TypeRevenue, revenue.StockID).Order("updated_at desc").First(&last).Error
-	if gorm.IsRecordNotFoundError(err) {
-		return false, hash
-	} else if err != nil {
-		panic(err)
-	}
-	return hash == last.Hash, hash
-}
-
-func (c Crawler) updateRevRecord(id, hash string) {
-	now := time.Now()
-	record := model.Record{
-		Type:      model.TypeRevenue,
-		StockID:   id,
-		Hash:      hash,
-		UpdatedAt: now,
-	}
-	record.ExpireAt = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.Local)
-	if err := c.Create(&record).Error; err != nil {
-		panic(err)
-	}
+	return revenue, true
 }

@@ -5,10 +5,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jinzhu/gorm"
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
@@ -16,7 +14,7 @@ func (c Crawler) UpdateDividends() (err error) {
 	stocks := c.findStocks("dividends")
 	fmt.Println(stocks)
 	for _, stockID := range stocks {
-		if c.isDividendExpire(stockID) {
+		if c.isExpire(model.TypeDividend, stockID) {
 			c.UpdateDividend(stockID)
 		}
 	}
@@ -39,28 +37,16 @@ func (c Crawler) findStocks(table string) (stocks []string) {
 	return
 }
 
-func (c Crawler) isDividendExpire(stock string) bool {
-	var last model.Record
-	err := c.Where("type = ? and stock_id = ? and expire_at > ?", model.TypeDividend, stock, time.Now()).First(&last).Error
-	if gorm.IsRecordNotFoundError(err) {
-		return true
-	} else if err != nil {
-		panic(err)
-	}
-	fmt.Println(last)
-	return false
-}
-
 func (c Crawler) UpdateDividend(id string) {
 	divs := c.crawlDividend(id)
-	if same, hash := c.isDivSame(id, divs); !same {
+	if same, hash := c.isSame(divs, model.TypeDividend, id); !same {
 		for _, dividend := range divs {
 			fmt.Println(dividend)
 			if err := c.saveDividend(dividend); err != nil {
 				panic(err)
 			}
 		}
-		c.updateDividendRecord(id, hash)
+		c.updateRecord(model.TypeDividend, id, hash)
 	} else {
 		fmt.Printf("%s not change %s\n", id, hash)
 	}
@@ -124,20 +110,4 @@ func parseInt(s string) int {
 		panic(err)
 	}
 	return num
-}
-
-func (c Crawler) updateDividendRecord(stockID, hash string) {
-	now := time.Now()
-	record := model.Record{
-		Type:      model.TypeDividend,
-		StockID:   stockID,
-		Hash:      hash,
-		UpdatedAt: now,
-	}
-	expire := time.Date(now.Year(), time.June, 1, 0, 0, 0, 0, time.Local)
-	if now.After(expire) {
-		expire = expire.AddDate(1, 0, 0)
-	}
-	record.ExpireAt = expire
-	c.Save(&record)
 }
