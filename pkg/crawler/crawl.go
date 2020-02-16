@@ -30,9 +30,6 @@ func New(config config.Config) Crawler {
 }
 
 func (c Crawler) UpdateInfo() (err error) {
-	if !c.isExpire() {
-		return
-	}
 	fmt.Println("Start crawling")
 	if err = c.importToDatabase(model.TypePriceListed, c.Config.URL.Listed, parseStockListed); err != nil {
 		return
@@ -40,13 +37,16 @@ func (c Crawler) UpdateInfo() (err error) {
 	if err = c.importToDatabase(model.TypePriceCounter, c.Config.URL.Counter, parseStockCounter); err != nil {
 		return
 	}
+	if err = c.UpdateDividends(); err != nil {
+		return
+	}
 	fmt.Println("End crawling")
 	return nil
 }
 
-func (c Crawler) isExpire() bool {
+func (c Crawler) isExpire(t model.Type) bool {
 	var last model.Record
-	err := c.Where("type = ? and expire_at > ?", model.TypePriceListed, time.Now()).First(&last).Error
+	err := c.Where("type = ? and expire_at > ?", t, time.Now()).First(&last).Error
 	if gorm.IsRecordNotFoundError(err) {
 		return true
 	} else if err != nil {
@@ -57,6 +57,9 @@ func (c Crawler) isExpire() bool {
 }
 
 func (c Crawler) importToDatabase(t model.Type, filename string, parse func([]string) model.Stock) (err error) {
+	if !c.isExpire(t) {
+		return nil
+	}
 	file, err := download(filename)
 	if err != nil {
 		return
@@ -75,6 +78,8 @@ func (c Crawler) importToDatabase(t model.Type, filename string, parse func([]st
 			c.saveStock(stock)
 		}
 		c.updatePriceRecord(t, hash)
+	} else {
+		fmt.Println("Data is same", hash)
 	}
 	return nil
 }
