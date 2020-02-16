@@ -40,6 +40,9 @@ func (c Crawler) UpdateInfo() (err error) {
 	if err = c.UpdateDividends(); err != nil {
 		return
 	}
+	if err = c.UpdateRevenues(); err != nil {
+		return
+	}
 	fmt.Println("End crawling")
 	return nil
 }

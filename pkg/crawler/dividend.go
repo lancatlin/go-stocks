@@ -13,7 +13,7 @@ import (
 )
 
 func (c Crawler) UpdateDividends() (err error) {
-	stocks := c.findStocks()
+	stocks := c.findStocks("dividends")
 	fmt.Println(stocks)
 	for _, stockID := range stocks {
 		if c.isDividendExpire(stockID) {
@@ -23,8 +23,8 @@ func (c Crawler) UpdateDividends() (err error) {
 	return nil
 }
 
-func (c Crawler) findStocks() (stocks []string) {
-	rows, err := c.Table("dividends").Select("stock_id").Group("stock_id").Rows()
+func (c Crawler) findStocks(table string) (stocks []string) {
+	rows, err := c.Table(table).Select("stock_id").Group("stock_id").Rows()
 	if err != nil {
 		panic(err)
 	}

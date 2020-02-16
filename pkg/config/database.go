@@ -28,7 +28,7 @@ func (c *Config) openDB() (db *gorm.DB) {
 		panic(err)
 	}
 	if err = c.DB.AutoMigrate(
-		&model.Stock{}, &model.Dividend{}, &model.Record{},
+		&model.Stock{}, &model.Dividend{}, &model.Record{}, &model.Revenue{},
 	).Error; err != nil {
 		panic(err)
 	}

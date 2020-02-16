@@ -7,11 +7,12 @@ import (
 
 type RYG struct {
 	model.Stock
+	model.Revenue
 	Returns []float64
 }
 
 func (r RYG) IsNil() bool {
-	return r.ID == ""
+	return r.Stock.ID == ""
 }
 
 func (h Handler) RYG(id string) RYG {
@@ -30,8 +31,16 @@ func (h Handler) RYG(id string) RYG {
 		return h.RYG(id)
 	}
 
+	var revenue model.Revenue
+	err := h.Where("stock_id = ?", id).Order("time desc").First(&revenue).Error
+	if gorm.IsRecordNotFoundError(err) {
+		h.AddRevenue(id)
+		return h.RYG(id)
+	}
+
 	ryg := RYG{
 		Stock:   stock,
+		Revenue: revenue,
 		Returns: make([]float64, 3),
 	}
 	for i, y := range []int{1, 5, 10} {
