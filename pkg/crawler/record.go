@@ -9,10 +9,7 @@ import (
 
 func (c Crawler) isExpire(t model.Type, id string) bool {
 	var last model.Record
-	err := c.Where(model.Record{
-		Type:    t,
-		StockID: id,
-	}).Where("expire_at > ?", time.Now()).First(&last).Error
+	err := c.Where("type = ? and stock_id = ? and expire_at > ?", t, id, time.Now()).First(&last).Error
 	if gorm.IsRecordNotFoundError(err) {
 		return true
 	} else if err != nil {
@@ -24,12 +21,11 @@ func (c Crawler) isExpire(t model.Type, id string) bool {
 func (c Crawler) isSame(data interface{}, t model.Type, id string) (bool, string) {
 	hash := hashString(data)
 	var last model.Record
-	err := c.Where(model.Record{
-		Type:    t,
-		StockID: id,
-	}).Order("updated_at desc").First(&last).Error
+	err := c.Where("type = ? AND stock_id = ?", t, id).Order("updated_at desc").First(&last).Error
 	if gorm.IsRecordNotFoundError(err) {
 		return false, hash
+	} else if err != nil {
+		panic(err)
 	}
 	return hash == last.Hash, hash
 }
