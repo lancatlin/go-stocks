@@ -10,12 +10,6 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/crawler"
 )
 
-const (
-	RED    = "#ff3c38"
-	YELLOW = "#fde74c"
-	GREEN  = "#81e979"
-)
-
 type Handler struct {
 	config.Config
 	crawler.Crawler
@@ -28,15 +22,9 @@ func Registry(conf config.Config) *gin.Engine {
 	handler := New(conf)
 
 	router.SetFuncMap(template.FuncMap{
-		"getColor": getColor,
-		"percent":  percent,
-		"formatTime": func(t time.Time) string {
-			zone, err := time.LoadLocation("Asia/Taipei")
-			if err != nil {
-				panic(err)
-			}
-			return t.In(zone).Format("2006-01-02 15:04:05")
-		},
+		"getColor":   getColor,
+		"percent":    percent,
+		"formatTime": formatTime,
 	})
 	router.LoadHTMLGlob("./templates/*.htm")
 	router.Static("/static", "./static")
@@ -54,8 +42,6 @@ func New(conf config.Config) Handler {
 	return Handler{
 		Config:  conf,
 		Crawler: crawler.New(conf),
-		ask:     make(chan bool, 1),
-		ans:     make(chan time.Time, 1),
 	}
 }
 
@@ -65,12 +51,11 @@ func (h Handler) Index(c *gin.Context) {
 	for i, id := range IDs {
 		result[i] = h.RYG(id)
 	}
-	h.ask <- true
 	page := gin.H{
-		"query":     hasQuery(c),
-		"stocks":    result,
-		"UpdatedAt": <-h.ans,
+		"query":  hasQuery(c),
+		"stocks": result,
 	}
+	page["listed"], page["counter"] = h.lastPriceUpdated()
 	c.HTML(200, "index.htm", page)
 }
 

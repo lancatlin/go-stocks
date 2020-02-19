@@ -15,6 +15,12 @@ func expire(t model.Type) (expire time.Time) {
 		if now.After(expire) {
 			expire = expire.AddDate(0, 0, 1)
 		}
+		switch expire.Weekday() {
+		case time.Saturday:
+			expire = expire.AddDate(0, 0, 2)
+		case time.Sunday:
+			expire = expire.AddDate(0, 0, 1)
+		}
 
 	case model.TypeDividend:
 		expire = time.Date(now.Year(), time.June, 1, 0, 0, 0, 0, time.Local)

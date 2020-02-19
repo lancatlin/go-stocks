@@ -54,6 +54,7 @@ func (c Crawler) updateStocks(t model.Type, parse func([]string) model.Stock) (e
 	if !c.isExpire(t, "") {
 		return nil
 	}
+	fmt.Println("Expire, crawl for new")
 	file, err := download(filename(c.Config, t))
 	if err != nil {
 		return
@@ -73,7 +74,7 @@ func (c Crawler) updateStocks(t model.Type, parse func([]string) model.Stock) (e
 		}
 		c.updateRecord(t, "", hash)
 	} else {
-		fmt.Println("Data is same", hash)
+		fmt.Printf("Data is same %s, do not thing\n", hash)
 	}
 	return nil
 }

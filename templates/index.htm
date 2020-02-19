@@ -14,15 +14,16 @@
 			<ul id="data">
 			</ul>
         </form>
-        <p>更新時間：{{ formatTime .UpdatedAt }}</p>
+        <p>股價更新時間：上市 {{ formatTime .listed }} 上櫃 {{ formatTime .counter }}</p>
         <table>
             <tr>
-                <th>股票號碼</th>
-                <th>股票名稱</th>
+                <th>股號</th>
+                <th>股名</th>
                 <th>收盤價</th>
                 <th>一年</th>
                 <th>五年</th>
                 <th>十年</th>
+                <th></th>
                 <th>月營收</th>
                 <th>年營收</th>
             </tr>
@@ -36,6 +37,7 @@
                 {{range .Returns}}
                     <td bgcolor="{{getColor .}}">{{percent .}}%</td>
                 {{end}}
+                <td>{{ .Month }}</td>
                 <td>{{ percent .MonthRevenue }}%</td>
                 <td>{{ percent .YearRevenue }}%</td>
                 <td>

@@ -6,39 +6,19 @@ import (
 )
 
 func (h Handler) UpdatePricesRegularly() {
-	var last time.Time
-	update := make(chan bool)
-	keep := make(chan bool)
-	reset := make(chan time.Time)
-	go h.after(update, keep)
+	h.update()
 	for {
 		select {
-		case <-update:
-			go func() {
-				fmt.Println("receive event")
-				if err := h.UpdateInfo(); err != nil {
-					fmt.Println(err)
-				}
-				fmt.Println("\n\n\nupdate at", last, "\n\n\n")
-				reset <- time.Now()
-				keep <- true
-			}()
-		case <-h.ask:
-			h.ans <- last
-		case last = <-reset:
-			fmt.Println("last is", last)
+		case <-time.After(time.Duration(h.Update) * time.Minute):
+			h.update()
 		}
 	}
 }
 
-func (h Handler) after(callback, keep chan bool) {
-	callback <- true
-	<-keep
-	for {
-		select {
-		case <-time.After(time.Duration(h.Update) * time.Minute):
-			callback <- true
-			<-keep
-		}
+func (h Handler) update() {
+	fmt.Println("receive event")
+	if err := h.UpdateInfo(); err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println("\n\n\nupdate at", formatTime(time.Now()), "\n\n\n")
 }
