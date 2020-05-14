@@ -9,15 +9,6 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
-func (c Crawler) UpdateRevenues() (err error) {
-	stocks := c.findStocks("revenues")
-	fmt.Println(stocks)
-	for _, stockID := range stocks {
-		c.updateRevenue(stockID)
-	}
-	return nil
-}
-
 func (c Crawler) AddRevenue(id string) {
 	if err := c.updateRevenue(id); err != nil {
 		panic(err)
@@ -31,13 +22,10 @@ func (c Crawler) updateRevenue(id string) (err error) {
 	fmt.Printf("%s revenue expire, crawling...\n", id)
 	revenue := c.crawlRevenue(id)
 	fmt.Printf("%s revenue crawled, %v\n", id, revenue)
-	if same, hash := c.isSame(revenue, model.TypeRevenue, id); !same {
-		fmt.Printf("%s revenue not same\n", id)
-		if err := c.Save(&revenue).Error; err != nil {
-			panic(err)
-		}
-		c.updateRecord(model.TypeRevenue, id, hash)
+	if err := c.Save(&revenue).Error; err != nil {
+		panic(err)
 	}
+	c.updateRecord(model.TypeRevenue, id)
 	return nil
 }
 
@@ -84,6 +72,5 @@ func parseRevenue(month int, s *goquery.Selection, id string) (model.Revenue, bo
 
 	revenue.MonthRevenue = parseFloat(m)
 	revenue.YearRevenue = parseFloat(y)
-	fmt.Println(revenue)
 	return revenue, true
 }

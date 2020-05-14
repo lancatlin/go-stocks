@@ -10,46 +10,15 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
-func (c Crawler) UpdateDividends() (err error) {
-	stocks := c.findStocks("dividends")
-	fmt.Println(stocks)
-	for _, stockID := range stocks {
-		if c.isExpire(model.TypeDividend, stockID) {
-			c.UpdateDividend(stockID)
-		}
-	}
-	return nil
-}
-
-func (c Crawler) findStocks(table string) (stocks []string) {
-	rows, err := c.Table(table).Select("stock_id").Group("stock_id").Rows()
-	if err != nil {
-		panic(err)
-	}
-
-	for rows.Next() {
-		var stock string
-		if err := rows.Scan(&stock); err != nil {
-			panic(err)
-		}
-		stocks = append(stocks, stock)
-	}
-	return
-}
-
 func (c Crawler) UpdateDividend(id string) {
 	divs := c.crawlDividend(id)
-	if same, hash := c.isSame(divs, model.TypeDividend, id); !same {
-		for _, dividend := range divs {
-			fmt.Println(dividend)
-			if err := c.saveDividend(dividend); err != nil {
-				panic(err)
-			}
+	for _, dividend := range divs {
+		fmt.Println(dividend)
+		if err := c.saveDividend(dividend); err != nil {
+			panic(err)
 		}
-		c.updateRecord(model.TypeDividend, id, hash)
-	} else {
-		fmt.Printf("%s not change %s\n", id, hash)
 	}
+	c.updateRecord(model.TypeDividend, id)
 }
 
 func (c Crawler) saveDividend(d model.Dividend) (err error) {

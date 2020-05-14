@@ -5,6 +5,7 @@ type Stock struct {
 	Name      string
 	Price     float64
 	Dividends []Dividend `gorm:"PRELOAD:true"`
+	Revenue   Revenue    `gorm:"PRELOAD:true"`
 }
 
 func (s Stock) ReturnOnInvestment(year int) float64 {

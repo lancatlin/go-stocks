@@ -18,23 +18,10 @@ func (c Crawler) isExpire(t model.Type, id string) bool {
 	return false
 }
 
-func (c Crawler) isSame(data interface{}, t model.Type, id string) (bool, string) {
-	hash := hashString(data)
-	var last model.Record
-	err := c.Where("type = ? AND stock_id = ?", t, id).Order("updated_at desc").First(&last).Error
-	if gorm.IsRecordNotFoundError(err) {
-		return false, hash
-	} else if err != nil {
-		panic(err)
-	}
-	return hash == last.Hash, hash
-}
-
-func (c Crawler) updateRecord(t model.Type, id, hash string) {
+func (c Crawler) updateRecord(t model.Type, id string) {
 	record := model.Record{
 		Type:      t,
 		StockID:   id,
-		Hash:      hash,
 		UpdatedAt: time.Now(),
 	}
 	record.ExpireAt = expire(t)

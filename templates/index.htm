@@ -20,6 +20,7 @@
                 <th>股號</th>
                 <th>股名</th>
                 <th>收盤價</th>
+                <th>資料時間</th>
                 <th>一年</th>
                 <th>五年</th>
                 <th>十年</th>
@@ -34,12 +35,15 @@
                 <td>{{.ID}}</td>
                 <td><a href="https://tw.stock.yahoo.com/q/bc?s={{.ID}}">{{.Name}}</a></td>
                 <td>{{percent .Price}}</td>
+                <td>{{ (index .Dividends 0).Year }}</td>
                 {{range .Returns}}
                     <td bgcolor="{{getColor .}}">{{percent .}}%</td>
                 {{end}}
-                <td>{{ .Month }}</td>
-                <td>{{ percent .MonthRevenue }}%</td>
-                <td>{{ percent .YearRevenue }}%</td>
+                {{ with .Revenue }}
+                    <td>{{ .Month }}</td>
+                    <td>{{ percent .MonthRevenue }}%</td>
+                    <td>{{ percent .YearRevenue }}%</td>
+                {{ end }}
                 <td>
                 {{ if $hasQuery }}
                     <button type="button" onclick="save({{ .ID }})">釘選</button>

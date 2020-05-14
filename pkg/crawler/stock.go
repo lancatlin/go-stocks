@@ -28,29 +28,48 @@ func New(config config.Config) Crawler {
 	return Crawler{config.DB, config}
 }
 
+func (c Crawler) GetStock(id string) (stock model.Stock, err error) {
+	if c.isExpire(model.TypeDividend, id) {
+		c.UpdateDividend(id)
+	}
+
+	if c.isExpire(model.TypeRevenue, id) {
+		if err = c.updateRevenue(id); err != nil {
+			return
+		}
+	}
+
+	if err = c.Where("id = ?", id).Preload("Dividends",
+		func(db *gorm.DB) *gorm.DB {
+			return db.Order("dividends.year DESC").Limit(10)
+		},
+	).First(&stock).Error; err != nil {
+		return
+	}
+
+	err = c.Where("stock_id = ?", id).Last(&stock.Revenue).Error
+	if gorm.IsRecordNotFoundError(err) {
+		return
+	}
+	return
+}
+
 func (c Crawler) UpdateInfo() (err error) {
 	fmt.Println("Start crawling")
 	fmt.Println("Crawl Listed")
-	if err = c.updateStocks(model.TypePriceListed, parseStockListed); err != nil {
+	if err = c.updatePrices(model.TypePriceListed, parseStockListed); err != nil {
 		return
 	}
 	fmt.Println("Crawl Counter")
-	if err = c.updateStocks(model.TypePriceCounter, parseStockCounter); err != nil {
+	if err = c.updatePrices(model.TypePriceCounter, parseStockCounter); err != nil {
 		return
 	}
 	fmt.Println("Crawl Dividends")
-	if err = c.UpdateDividends(); err != nil {
-		return
-	}
-	fmt.Println("Crawl Revenues")
-	if err = c.UpdateRevenues(); err != nil {
-		return
-	}
 	fmt.Println("End crawling")
 	return nil
 }
 
-func (c Crawler) updateStocks(t model.Type, parse func([]string) model.Stock) (err error) {
+func (c Crawler) updatePrices(t model.Type, parse func([]string) model.Stock) (err error) {
 	if !c.isExpire(t, "") {
 		return nil
 	}
@@ -60,22 +79,18 @@ func (c Crawler) updateStocks(t model.Type, parse func([]string) model.Stock) (e
 		return
 	}
 
-	if same, hash := c.isSame(file, t, ""); !same {
-		reader := csv.NewReader(strings.NewReader(file))
-		// ignore first line
-		reader.Read()
-		for {
-			record, err := reader.Read()
-			if err == io.EOF {
-				break
-			}
-			stock := parse(record)
-			c.saveStock(stock)
+	reader := csv.NewReader(strings.NewReader(file))
+	// ignore first line
+	reader.Read()
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
 		}
-		c.updateRecord(t, "", hash)
-	} else {
-		fmt.Printf("Data is same %s, do not thing\n", hash)
+		stock := parse(record)
+		c.saveStock(stock)
 	}
+	c.updateRecord(t, "")
 	return nil
 }
 

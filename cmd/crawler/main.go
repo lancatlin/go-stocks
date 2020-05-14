@@ -20,11 +20,8 @@ func init() {
 
 func main() {
 	conf := config.New()
-	c := crawler.New(conf.DB)
+	c := crawler.New(conf)
 	if UpdatePrices {
 		c.UpdateInfo()
-	}
-	if UpdateDividend {
-		c.UpdateDividends()
 	}
 }
