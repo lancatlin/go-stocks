@@ -7,16 +7,15 @@ import (
 type RYG struct {
 	model.Stock
 	Returns []float64
-}
-
-func (r RYG) IsNil() bool {
-	return r.Stock.ID == ""
+	Error   string
 }
 
 func (h Handler) RYG(id string) RYG {
 	stock, err := h.GetStock(id)
 	if err != nil {
-		return RYG{}
+		return RYG{
+			Error: err.Error(),
+		}
 	}
 
 	ryg := RYG{

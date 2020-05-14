@@ -31,7 +31,7 @@
         {{ $hasQuery := .query}}
         {{range .stocks}}
             <tr id='tr-{{ .ID }}'>
-            {{ if not .IsNil }}
+            {{ if eq .Error "" }}
                 <td>{{.ID}}</td>
                 <td><a href="https://tw.stock.yahoo.com/q/bc?s={{.ID}}">{{.Name}}</a></td>
                 <td>{{percent .Price}}</td>
@@ -53,8 +53,9 @@
                 {{ end }}
                 </td>
             {{ else }}
-                <td>----</td>
-                <td>Not Found</td>
+                <td></td>
+                <td>錯誤</td>
+                <td colspan="5">{{ .Error }}</td>
                 {{ if $hasQuery }}
                     {{ $hasQuery = false }}
                 {{end}}

@@ -10,7 +10,7 @@ import (
 	"github.com/lancatlin/go-stocks/pkg/model"
 )
 
-func (c Crawler) UpdateDividend(id string) {
+func (c Crawler) UpdateDividend(id string) (err error) {
 	divs := c.crawlDividend(id)
 	for _, dividend := range divs {
 		fmt.Println(dividend)
@@ -19,6 +19,7 @@ func (c Crawler) UpdateDividend(id string) {
 		}
 	}
 	c.updateRecord(model.TypeDividend, id)
+	return nil
 }
 
 func (c Crawler) saveDividend(d model.Dividend) (err error) {

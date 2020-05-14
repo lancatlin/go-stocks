@@ -16,7 +16,9 @@ import (
 )
 
 var (
-	ErrStockNotFound = errors.New("stock not found")
+	ErrStockNotFound     = errors.New("找不到股票")
+	ErrDividendsNotFound = errors.New("找不到股利資料")
+	ErrRevenueNotFound   = errors.New("找不到營收資料")
 )
 
 type Crawler struct {
@@ -30,7 +32,9 @@ func New(config config.Config) Crawler {
 
 func (c Crawler) GetStock(id string) (stock model.Stock, err error) {
 	if c.isExpire(model.TypeDividend, id) {
-		c.UpdateDividend(id)
+		if err = c.UpdateDividend(id); err != nil {
+			return
+		}
 	}
 
 	if c.isExpire(model.TypeRevenue, id) {
@@ -43,12 +47,21 @@ func (c Crawler) GetStock(id string) (stock model.Stock, err error) {
 		func(db *gorm.DB) *gorm.DB {
 			return db.Order("dividends.year DESC").Limit(10)
 		},
-	).First(&stock).Error; err != nil {
+	).First(&stock).Error; gorm.IsRecordNotFoundError(err) {
+		err = ErrStockNotFound
+		return
+	} else if err != nil {
+		return
+	}
+
+	if len(stock.Dividends) == 0 {
+		err = ErrDividendsNotFound
 		return
 	}
 
 	err = c.Where("stock_id = ?", id).Last(&stock.Revenue).Error
 	if gorm.IsRecordNotFoundError(err) {
+		err = ErrRevenueNotFound
 		return
 	}
 	return

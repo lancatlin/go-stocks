@@ -16,11 +16,11 @@ func (c Crawler) AddRevenue(id string) {
 }
 
 func (c Crawler) updateRevenue(id string) (err error) {
-	if !c.isExpire(model.TypeRevenue, id) {
-		return nil
-	}
 	fmt.Printf("%s revenue expire, crawling...\n", id)
-	revenue := c.crawlRevenue(id)
+	revenue, err := c.crawlRevenue(id)
+	if err != nil {
+		return
+	}
 	fmt.Printf("%s revenue crawled, %v\n", id, revenue)
 	if err := c.Save(&revenue).Error; err != nil {
 		panic(err)
@@ -29,12 +29,10 @@ func (c Crawler) updateRevenue(id string) (err error) {
 	return nil
 }
 
-func (c Crawler) crawlRevenue(id string) (revenue model.Revenue) {
+func (c Crawler) crawlRevenue(id string) (revenue model.Revenue, err error) {
 	file, err := download(fmt.Sprintf(c.Config.URL.Revenue, id))
 	if err != nil {
-		return model.Revenue{
-			StockID: id,
-		}
+		return
 	}
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(file))
 	if err != nil {
@@ -48,7 +46,7 @@ func (c Crawler) crawlRevenue(id string) (revenue model.Revenue) {
 		}
 		return true
 	})
-	return revenue
+	return revenue, nil
 }
 
 func parseRevenue(month int, s *goquery.Selection, id string) (model.Revenue, bool) {
