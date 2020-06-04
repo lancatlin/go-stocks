@@ -56,9 +56,9 @@ func parseDividend(s *goquery.Selection, id string) model.Dividend {
 		switch i {
 		case 0:
 			dividend.Year = parseInt(s.Text())
-		case 1:
+		case 2:
 			dividend.MoneyDividend = parseFloat(s.Text())
-		case 4:
+		case 5:
 			dividend.StockDividend = parseFloat(s.Text())
 		}
 	})
@@ -75,7 +75,8 @@ func parseFloat(s string) float64 {
 }
 
 func parseInt(s string) int {
-	num, err := strconv.Atoi(s)
+	re := regexp.MustCompile(`^\d+`)
+	num, err := strconv.Atoi(re.FindString(s))
 	if err != nil {
 		panic(err)
 	}
