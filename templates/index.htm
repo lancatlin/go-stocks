@@ -33,7 +33,7 @@
             <tr id='tr-{{ .ID }}'>
             {{ if eq .Error "" }}
                 <td>{{.ID}}</td>
-                <td><a href="https://tw.stock.yahoo.com/q/bc?s={{.ID}}">{{.Name}}</a></td>
+                <td><a href="https://tw.stock.yahoo.com/q/bc?s={{.ID}}" target="_blank">{{.Name}}</a></td>
                 <td>{{percent .Price}}</td>
                 <td>{{ (index .Dividends 0).Year }}</td>
                 {{range .Returns}}

@@ -14,8 +14,9 @@ func (s Stock) ReturnOnInvestment(year int) float64 {
 		totalM += div.MoneyDividend
 		totalS += div.StockDividend
 	}
-	avgM, avgS := totalM/float64(year), totalS/float64(year)
-	return (avgM/s.Price + avgS/10) * 100
+	avgM, avgS := totalM/float64(year), totalS/float64(year)/10
+	newPrice := s.Price/(1+avgS) - avgM
+	return (avgM + avgS*newPrice) / s.Price * 100
 }
 
 func min(a, b int) int {
