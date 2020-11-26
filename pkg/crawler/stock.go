@@ -153,7 +153,7 @@ func parseStockListed(record []string) (stock model.Stock) {
 	price := strings.Replace(record[7], ",", "", -1)
 	stock.Price, err = strconv.ParseFloat(price, 64)
 	if err != nil {
-		panic(err)
+		stock.Price = 0
 	}
 	return
 }
