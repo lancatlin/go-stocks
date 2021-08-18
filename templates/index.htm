@@ -2,17 +2,17 @@
 <html>
     <head>
         <title>股票紅綠燈</title>
-		<link type="text/css" href="/static/css/style.css" rel="stylesheet">
+                <link type="text/css" href="/static/css/style.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/js-cookie@beta/dist/js.cookie.min.js"></script>
         <script src="/static/js/index.js"></script>
-		<meta name="viewport" content="width=device-width,initial-scale=1.0">
+                <meta name="viewport" content="width=device-width,initial-scale=1.0">
     </head>
     <body>
         <h1><a href="/">股票紅綠燈</a></h1>
         <form action="/" method="get">
             股票名稱或代號：<input type="text" name="id" oninput="search(this)" autocomplete="off">
-			<ul id="data">
-			</ul>
+                        <ul id="data">
+                        </ul>
         </form>
         <p>股價更新時間：上市 {{ formatTime .listed }} 上櫃 {{ formatTime .counter }}</p>
         <table>
@@ -63,5 +63,14 @@
             </tr>
         {{end}}
         </table>
+        <div>
+                <h3>使用說明</h3>
+                <p>公式：( 歷年現金股利 / 現價 + 歷年股票股利 / 10 ) / 年</p>
+                <p>紅：&lt 5%，黃：5% ~ 8%，綠：&gt 8%。</p>
+                <h3>如果幫助到你，請註冊 LikeCoin 拍手支持我！</h3>
+                <iframe class="LikeCoin" height="235" src="https://button.like.co/in/embed/wancatserver/button?referrer=https://stock.wancat.cc" width="100%" frameborder=0></iframe>
+                <p>Contact: wancat@wancat.cc</p>
+                <a href="https://github.com/lancatlin/go-stocks">GitHub</a>
+        </div>
     </body>
 </html>
