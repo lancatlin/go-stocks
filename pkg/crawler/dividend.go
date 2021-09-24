@@ -41,8 +41,15 @@ func (c Crawler) crawlDividend(id string) []model.Dividend {
 		panic(err)
 	}
 	divs := make([]model.Dividend, 0, 10)
-	doc.Find(`tr[bgcolor='#FFFFFF']`).Each(func(i int, s *goquery.Selection) {
+	doc.Find(`li[class="List(n)"]`).Each(func(i int, s *goquery.Selection) {
+		year := s.Find(`div[class="D(f) W(98px) Ta(start)"]`).Text()
+		if year == "" {
+			return
+		}
+		fmt.Print(year, ": ")
 		dividend := parseDividend(s, id)
+		dividend.Year = parseInt(year)
+		fmt.Println()
 		divs = append(divs, dividend)
 	})
 	return divs
@@ -52,13 +59,12 @@ func parseDividend(s *goquery.Selection, id string) model.Dividend {
 	dividend := model.Dividend{
 		StockID: id,
 	}
-	s.Children().Each(func(i int, s *goquery.Selection) {
+	s.Find("span").Each(func(i int, s *goquery.Selection) {
+		fmt.Print(s.Text(), " ")
 		switch i {
 		case 0:
-			dividend.Year = parseInt(s.Text())
-		case 2:
 			dividend.MoneyDividend = parseFloat(s.Text())
-		case 5:
+		case 1:
 			dividend.StockDividend = parseFloat(s.Text())
 		}
 	})
@@ -69,7 +75,7 @@ func parseFloat(s string) float64 {
 	re := regexp.MustCompile(`-?[\d\.]+`)
 	num, err := strconv.ParseFloat(re.FindString(s), 64)
 	if err != nil {
-		panic(err)
+		return 0
 	}
 	return num
 }

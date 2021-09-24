@@ -1,4 +1,4 @@
-mode = "release" # "debug" or "release"
+mode = "debug" # "debug" or "release"
 update = 2
 
 [server]
@@ -14,5 +14,5 @@ password = "vNweEkGg37/ExdKw"
 [url]
 listed = "http://www.twse.com.tw/exchangeReport/STOCK_DAY_ALL?response=open_data"
 counter = "http://www.tpex.org.tw/web/stock/aftertrading/DAILY_CLOSE_quotes/stk_quote_result.php?l=zh-tw&o=data"
-dividend = "https://tw.stock.yahoo.com/d/s/dividend_%s.html"
-revenue = "https://tw.stock.yahoo.com/d/s/earning_%s.html"
+dividend = "https://tw.stock.yahoo.com/quote/%s/dividend"
+revenue = "https://tw.stock.yahoo.com/quote/%s/revenue"
