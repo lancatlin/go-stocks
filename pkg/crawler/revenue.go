@@ -38,37 +38,29 @@ func (c Crawler) crawlRevenue(id string) (revenue model.Revenue, err error) {
 	if err != nil {
 		panic(err)
 	}
-	doc.Find(`tr[bgcolor='#FFFFFF']`).Slice(2, 14).EachWithBreak(func(i int, s *goquery.Selection) bool {
-		if r, ok := parseRevenue(i, s, id); ok {
-			revenue = r
-		} else {
-			return false
-		}
-		return true
-	})
-	return revenue, nil
+	s := doc.Find(`li[class="List(n)"]`).First()
+	year := s.Find(`div[class="W(65px) Ta(start)"]`).Text()
+	if year == "" {
+		return
+	}
+	fmt.Println(year, ": ")
+	revenue = parseRevenue(s, id)
+	revenue.Time, err = time.Parse("2006/01", year)
+	return revenue, err
 }
 
-func parseRevenue(month int, s *goquery.Selection, id string) (model.Revenue, bool) {
+func parseRevenue(s *goquery.Selection, id string) (model.Revenue) {
 	revenue := model.Revenue{
 		StockID: id,
 	}
 
-	now := time.Now()
-	if now.Month() == time.January {
-		revenue.Time = time.Date(now.Year()-1, time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
-	} else {
-		revenue.Time = time.Date(now.Year(), time.Month(month+1), 1, 0, 0, 0, 0, time.Local)
-	}
-
-	c := s.Children()
-	m := c.Get(5).FirstChild.Data
-	y := c.Get(7).FirstChild.Data
-	if m == "-" || y == "-" {
-		return revenue, false
-	}
-
-	revenue.MonthRevenue = parseFloat(m)
-	revenue.YearRevenue = parseFloat(y)
-	return revenue, true
+	s.Find("span").Each(func(i int, s *goquery.Selection) {
+		switch i {
+		case 1:
+			revenue.MonthRevenue = parseFloat(s.Text())
+		case 3:
+			revenue.YearRevenue = parseFloat(s.Text())
+		}
+	})
+	return revenue
 }

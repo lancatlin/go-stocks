@@ -46,10 +46,8 @@ func (c Crawler) crawlDividend(id string) []model.Dividend {
 		if year == "" {
 			return
 		}
-		fmt.Print(year, ": ")
 		dividend := parseDividend(s, id)
 		dividend.Year = parseInt(year)
-		fmt.Println()
 		divs = append(divs, dividend)
 	})
 	return divs
@@ -60,7 +58,6 @@ func parseDividend(s *goquery.Selection, id string) model.Dividend {
 		StockID: id,
 	}
 	s.Find("span").Each(func(i int, s *goquery.Selection) {
-		fmt.Print(s.Text(), " ")
 		switch i {
 		case 0:
 			dividend.MoneyDividend = parseFloat(s.Text())

@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/lancatlin/go-stocks/pkg/config"
@@ -15,5 +14,4 @@ func TestCrawlDividend(t *testing.T) {
 	if len(dividends) == 0 {
 		t.Fatal("Result length is 0:", dividends)
 	}
-	fmt.Println(dividends)
 }
