@@ -56,9 +56,9 @@ func parseRevenue(s *goquery.Selection, id string) (model.Revenue) {
 
 	s.Find("span").Each(func(i int, s *goquery.Selection) {
 		switch i {
-		case 1:
-			revenue.MonthRevenue = parseFloat(s.Text())
 		case 3:
+			revenue.MonthRevenue = parseFloat(s.Text())
+		case 6:
 			revenue.YearRevenue = parseFloat(s.Text())
 		}
 	})
